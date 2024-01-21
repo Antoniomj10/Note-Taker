@@ -30,16 +30,16 @@ app.post("/api/notes", async (req, res) => {
     res.json("note saved");
 });
 
-app.delete("/api/notes/:id", async (req, res) => {
-    const noteId = req.params.id;
-    const noteData = await readFile("./db/db.json", "utf8");
-    let parsedNotes = JSON.parse(noteData);
+app.delete('/api/notes/:id', (req, res) => {
+    const noteID = parseInt(req.params.id.replace(':', ''));
+    console.log(noteID)
+    const newDB = db.filter((value, i) => db[i].id != noteID);
+    db = newDB;
+    fs.writeFile('./db/db.json', JSON.stringify(newDB), (error) => {
+        if(error) console.log(error);
+    });
+})
 
-    parsedNotes = parsedNotes.filter(note => note.id !== noteId);
-
-    await writeFile("./db/db.json", JSON.stringify(parsedNotes));
-    res.json({ message: "Note deleted" });
-});
 
 app.get("/*", (req, res) => { 
     res.sendFile(path.join(__dirname, "/public/index.html"));
