@@ -7,7 +7,6 @@ const { readFile, writeFile } = require("fs").promises
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(express.static("public"));
 
 app.get("/notes", function(req, res) {
@@ -19,23 +18,33 @@ app.get("/api/notes", (req, res) => {
 });
 
 app.post("/api/notes", async (req, res) => {
-    const noteData = await readFile("./db/db.json", "utf8")
+    const noteData = await readFile("./db/db.json", "utf8");
     const parsedNote = JSON.parse(noteData);
     const newNote = {
         title: req.body.title,
         text: req.body.text,
         id: uniqid()
-    }
+    };
     parsedNote.push(newNote);
     await writeFile("./db/db.json", JSON.stringify(parsedNote));
-    res.json("note saved")
+    res.json("note saved");
 });
 
-app.get("/*", (re, res) => { 
+app.delete("/api/notes/:id", async (req, res) => {
+    const noteId = req.params.id;
+    const noteData = await readFile("./db/db.json", "utf8");
+    let parsedNotes = JSON.parse(noteData);
+
+    parsedNotes = parsedNotes.filter(note => note.id !== noteId);
+
+    await writeFile("./db/db.json", JSON.stringify(parsedNotes));
+    res.json({ message: "Note deleted" });
+});
+
+app.get("/*", (req, res) => { 
     res.sendFile(path.join(__dirname, "/public/index.html"));
 });
 
-
 app.listen(PORT, () => {
-    console.log(`App listening at http://localhost:${PORT}`)
+    console.log(`App listening at http://localhost:${PORT}`);
 });
